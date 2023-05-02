@@ -21,7 +21,7 @@ class SampleApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, PageOne, PageTwo, TablePage, Publisher, Book, BookCopies, Borrower, BookLoans):
+        for F in (StartPage, PageOne, PageTwo, TablePage, Publisher, Book, BookCopies, Borrower, BookLoans, BorrowerView, BookInfoView):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -44,12 +44,12 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="This is the start page", font=controller.title_font)
+        label = tk.Label(self, text="Start Page", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
-        button1 = tk.Button(self, text="Insert",
+        button1 = tk.Button(self, text="Table editing",
                             command=lambda: controller.show_frame("PageOne"))
-        button2 = tk.Button(self, text="Go to Page Two",
+        button2 = tk.Button(self, text="Go to View Selection",
                             command=lambda: controller.show_frame("PageTwo"))
         button1.pack()
         button2.pack()
@@ -76,6 +76,8 @@ class PageOne(tk.Frame):
                            command=lambda: controller.show_frame("BookCopies"))
         button6 = tk.Button(self, text=rows[6],
                            command=lambda: controller.show_frame("TablePage"))
+        button7 = tk.Button(self, text="Return to Start",
+                           command=lambda: controller.show_frame("StartPage"))
         button.pack()
         button1.pack()
         button2.pack()
@@ -83,13 +85,11 @@ class PageOne(tk.Frame):
         button4.pack()
         button5.pack()
         button6.pack()
+        button7.pack()
 
 class Publisher(tk.Frame):
 
-    #Publisher_Name varchar(255) primary key,
-    #Phone varchar(255),
-    #Address varchar(255)
-
+     
     def __init__(self, parent, controller):
         
         def submit():
@@ -226,10 +226,7 @@ class Borrower(tk.Frame):
 
 class Book(tk.Frame):
 
-    #Publisher_Name varchar(255) primary key,
-    #Phone varchar(255),
-    #Address varchar(255)
-
+     
     def __init__(self, parent, controller):
         
         def submit():
@@ -309,10 +306,7 @@ class Book(tk.Frame):
         
 class BookLoans(tk.Frame):
 
-    #Publisher_Name varchar(255) primary key,
-    #Phone varchar(255),
-    #Address varchar(255)
-
+     
     def __init__(self, parent, controller):
         
         def submit():
@@ -364,7 +358,7 @@ class BookLoans(tk.Frame):
         
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="Book Table", font=controller.title_font)
+        label = tk.Label(self, text="Book Loans Table", font=controller.title_font)
         label.grid(row = 0, column = 0, pady = 10)
         
         Book_Id_Label = Label(self, text = 'Book ID')
@@ -398,7 +392,7 @@ class BookLoans(tk.Frame):
         Returned_date.grid(row = 6, column = 1, padx = 30)
         
         Returned_date_label = Label(self, text = 'Late')
-        Returned_date_label.grid(row = 6, column = 0)
+        Returned_date_label.grid(row = 7, column = 0)
         Returned_date = Entry(self, width = 30)
         Returned_date.grid(row = 7, column = 1, padx = 30)
         
@@ -418,10 +412,7 @@ class BookLoans(tk.Frame):
         
 class BookCopies(tk.Frame):
 
-    #Publisher_Name varchar(255) primary key,
-    #Phone varchar(255),
-    #Address varchar(255)
-
+     
     def __init__(self, parent, controller):
         
         def submit():
@@ -452,7 +443,7 @@ class BookCopies(tk.Frame):
         
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="Book Table", font=controller.title_font)
+        label = tk.Label(self, text="Book Copies Table", font=controller.title_font)
         label.grid(row = 0, column = 0, pady = 10)
         
         Book_Id_Label = Label(self, text = 'Book ID')
@@ -485,12 +476,117 @@ class PageTwo(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="This is page 2", font=controller.title_font)
+        label = tk.Label(self, text="Select your view", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
+        button = tk.Button(self, text="Go to the Borrower View",
+                           command=lambda: controller.show_frame("BorrowerView"))
+        button.pack()
+        button = tk.Button(self, text="Go to the Book Info View",
+                           command=lambda: controller.show_frame("BookInfoView"))
+        button.pack()
         button = tk.Button(self, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
         button.pack()
+
+class BorrowerView(tk.Frame):
+
+     
+    def __init__(self, parent, controller):
         
+        def showValues():
+            
+            iq = sqlite3.connect('LMS.db')
+            iq_cur = iq.cursor()
+            nn = Name.get()
+            cc = Card_No.get()
+            iq_cur.execute("SELECT Borrower.Card_No, Name, IIF(Late=1,'$'|| CAST(sum(LateFee) AS text),'$0.00') FROM BORROWER left join book_loans on borrower.card_no=book_loans.card_no natural join book natural join library_branch WHERE Borrower.Card_No LIKE ? AND Name LIKE ? group by name order by sum(late*latefee) desc",('%'+cc+'%','%'+nn+'%')
+            )
+            records = iq_cur.fetchall()
+            print_records = 'Card No|Name|Late Fees\n'
+            for record in records:
+                print_records+= str(str(record[0]) + "|" + str(record[1])+ "|" + str(record[2]) + "\n")
+            
+            iq_label = Label(self, text = "                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n")
+            iq_label.grid(row=9,column=0,columnspan=10)
+            iq_label = Label(self,text=print_records)
+            iq_label.grid(row=9,column=0,columnspan=2)
+            
+            #iq_label.grid_forget()
+            iq.close()
+        
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Borrower View", font=controller.title_font)
+        label.grid(row = 0, column = 0, pady = 10)
+        
+        Card_No_Label = Label(self, text = 'Card No')
+        Card_No_Label.grid(row = 1, column = 0)
+        Card_No = Entry(self, width = 30)
+        Card_No.grid(row = 1, column = 1, padx = 30)
+        
+        Name_Label = Label(self, text = 'Name')
+        Name_Label.grid(row = 2, column = 0)
+        Name = Entry(self, width = 30)
+        Name.grid(row = 2, column = 1, padx = 30)
+        
+        button = tk.Button(self, text="View Values", command=showValues)
+        button.grid(row = 4, column = 1, padx = 30)
+        
+        button = tk.Button(self, text="Go to the start page",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.grid(row = 5, column = 1, padx = 30)
+        
+class BookInfoView(tk.Frame):
+
+     
+    def __init__(self, parent, controller):
+        
+        def showValues():
+            
+            iq = sqlite3.connect('LMS.db')
+            iq_cur = iq.cursor()
+            tt=Title.get()
+            ii=Book_Id.get()
+            if (ii != ''):
+                iq_cur.execute("SELECT book_copies.Book_Id, Title, book_copies.Branch_Id, IIF(latefee is not null,'$' || latefee, 'N\A') from book_copies left join book on book_copies.book_id = book.book_id left join library_branch on book_copies.branch_id = library_branch.branch_id Where book_copies.book_id = ?",(ii))
+            else:
+                iq_cur.execute("SELECT book_copies.Book_Id, Title, book_copies.Branch_Id, IIF(latefee is not null,'$' || latefee, 'N\A') from book_copies left join book on book_copies.book_id = book.book_id left join library_branch on book_copies.branch_id = library_branch.branch_id Where Title LIKE ? AND book_copies.book_id LIKE ? order by (case when ? = '' then latefee else book_copies.Book_Id end) desc",('%'+tt+'%','%'+ii+'%',tt))
+            records = iq_cur.fetchall()
+            print_records = 'Book ID|Name|Library Branch|Late Fee\n'
+            for record in records:
+                print_records+= str(str(record[0]) + "|" + str(record[1])+ "|" + str(record[2]) +'|'+ str(record[3]) + "\n")
+            
+            iq_label = Label(self, text = "                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n                                                                                        \n")
+            iq_label.grid(row=9,column=0,columnspan=10)
+            iq_label = Label(self,text=print_records)
+            iq_label.grid(row=9,column=0,columnspan=10)
+            
+            #iq_label.grid_forget()
+            iq.close()
+        
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Book View", font=controller.title_font)
+        label.grid(row = 0, column = 0, pady = 10)
+        
+        Book_Id_Label = Label(self, text = 'BookID')
+        Book_Id_Label.grid(row = 1, column = 0)
+        Book_Id = Entry(self, width = 30)
+        Book_Id.grid(row = 1, column = 1, padx = 30)
+        
+        Title_Label = Label(self, text = 'Title')
+        Title_Label.grid(row = 2, column = 0)
+        Title = Entry(self, width = 30)
+        Title.grid(row = 2, column = 1, padx = 30)
+        
+        button = tk.Button(self, text="View Values", command=showValues)
+        button.grid(row = 4, column = 1, padx = 30)
+        
+        button = tk.Button(self, text="Go to the start page",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.grid(row = 5, column = 1, padx = 30)
+        
+
 class TablePage(tk.Frame):
 
     def __init__(self, parent, controller):
